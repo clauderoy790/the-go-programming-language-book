@@ -37,3 +37,10 @@ func hasValidPrefix(url string) bool {
 	}
 	return false
 }
+
+func test() {
+	v := true
+	if v == true {
+
+	}
+}
