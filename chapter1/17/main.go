@@ -40,7 +40,7 @@ func hasValidPrefix(url string) bool {
 
 func test() {
 	v := true
-	if v == true {
-
+	if v {
+		fmt.Println("salut")
 	}
 }
