@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 var pc [256]byte
 
@@ -12,11 +15,23 @@ func init() {
 	}
 }
 
+var str string
+
+func init() {
+	str = "init str"
+}
+
 func main() {
 	nb := uint64(1 << 4)
 	fmt.Println("bits count: ", nb)
+	str, err := getError()
+	fmt.Println("the error:", err)
+	fmt.Println("the str: ", str)
 }
 
+func getError() (string, error) {
+	return "the str", errors.New("salut")
+}
 func PopCount(x uint64) int {
 	val := 0
 	for i := 0; i < 8; i++ {
