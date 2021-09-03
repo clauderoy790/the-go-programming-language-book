@@ -1,13 +1,10 @@
-//!+
-
-// Surface computes an SVG rendering of a 3-D surface function.
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"log"
 	"math"
-	"os"
+	"net/http"
 )
 
 const (
@@ -18,26 +15,22 @@ const (
 	zscale        = height * 0.4        // pixels per z unit
 	angle         = math.Pi / 6         // angle of x, y axes (=30°)
 )
-
-var sin30, cos30 = math.Sin(angle), math.Cos(angle) // sin(30°), cos(30°)
+var sin30, cos30 = math.Sin(angle), math.Cos(angle) // sin(30°), cos(30°
 
 func main() {
-	writeSvg()
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "image/svg+xml")
+		writeSvg(w)
+	}
+	http.HandleFunc("/", handler)
+	//!-http
+	log.Fatal(http.ListenAndServe("localhost:8000", nil))
+
 }
-
-func writeSvg() {
-	f, err := os.Create("data.svg")
-	if err != nil {
-		panic(err)
-	}
-	writer := bufio.NewWriter(f)
-
-	_, err = writer.WriteString(fmt.Sprintf("<svg xmlns='http://www.w3.org/2000/svg' "+
+func writeSvg(writer http.ResponseWriter) {
+	_, err := writer.Write([]byte(fmt.Sprintf("<svg xmlns='http://www.w3.org/2000/svg' "+
 		"style='stroke: grey; fill: white; stroke-width: 0.7' "+
-		"width='%d' height='%d'>", width, height))
-	if err != nil {
-		panic(err)
-	}
+		"width='%d' height='%d'>", width, height)))
 	for i := 0; i < cells; i++ {
 		for j := 0; j < cells; j++ {
 			ax, ay, ok := corner(i+1, j)
@@ -57,15 +50,14 @@ func writeSvg() {
 				continue
 			}
 			col := getColor(ay, by, cy, dy)
-			_, err = writer.WriteString(fmt.Sprintf("<polygon fill='%s' points='%g,%g %g,%g %g,%g %g,%g'/>\n",
-				col, ax, ay, bx, by, cx, cy, dx, dy))
+			_, err = writer.Write([]byte((fmt.Sprintf("<polygon fill='%s' points='%g,%g %g,%g %g,%g %g,%g'/>\n",
+				col, ax, ay, bx, by, cx, cy, dx, dy))))
 			if err != nil {
 				panic(err)
 			}
 		}
 	}
-	_, _ = writer.WriteString("</svg>")
-	writer.Flush()
+	_, _ = writer.Write([]byte("</svg>"))
 }
 
 func getColor(points ...float64) string {
